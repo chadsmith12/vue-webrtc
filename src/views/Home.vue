@@ -1,18 +1,27 @@
 <template>
   <div class="home">
     <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <ul v-for="device in deviceInfo" :key="device.deviceId">
+      <li>{{ device.label }}</li>
+    </ul>
   </div>
 </template>
 
 <script>
 // @ is an alias to /src
-import HelloWorld from '@/components/HelloWorld.vue'
+import { getDevices } from '@/lib/media-devices';
 
 export default {
   name: 'Home',
-  components: {
-    HelloWorld
-  }
+  data() {
+    return {
+      deviceInfo: []
+    }
+  },
+  created() {
+    getDevices().then(options => {
+      this.deviceInfo = options.getDeviceOptions('audioinput');
+    });
+  },
 }
 </script>
