@@ -1,4 +1,4 @@
-import { DeviceSelectionOptions, DeviceKind } from "@/lib/DeviceSelectionOptions";
+import { DeviceSelectionOptions } from "@/lib/DeviceSelectionOptions";
 
 
 /**
@@ -13,15 +13,11 @@ export function getDevicesOfKind(deviceInfos: Array<MediaDeviceInfo>, kind: stri
 }
 
 /**
- * @returns Promise that resolves to an array of MediaDeviceInfo
+ * Gets all the media devices there are and groups them by their kind for easy access.
+ * @returns Promise that resolves to a @see DeviceSelectionOptions
  */
 export function getDevices() {
     return navigator.mediaDevices.enumerateDevices().then((deviceInfos) => {
-        const kinds: Array<string> = ['audioinput', 'audiooutput', 'videoinpput'];
-        return kinds.reduce<DeviceSelectionOptions>((deviceSelections: DeviceSelectionOptions, kind: string) => {
-            const currentKind = kind as DeviceKind;
-            deviceSelections.addDeviceOptions(currentKind, getDevicesOfKind(deviceInfos, kind));
-            return deviceSelections;
-        }, new DeviceSelectionOptions());
+        return new DeviceSelectionOptions(deviceInfos);
     });
 }

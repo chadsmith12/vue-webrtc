@@ -7,21 +7,20 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 // @ is an alias to /src
+import { Vue, Component } from 'vue-property-decorator'
 import { getDevices } from '@/lib/media-devices';
+import {DeviceKind} from '@/lib/DeviceSelectionOptions';
 
-export default {
-  name: 'Home',
-  data() {
-    return {
-      deviceInfo: []
-    }
-  },
+@Component
+export default class Home extends Vue {
+  deviceInfo: MediaDeviceInfo[] = [];
+
   created() {
     getDevices().then(options => {
-      this.deviceInfo = options.getDeviceOptions('audioinput');
+      this.deviceInfo = options.getDeviceOptions(DeviceKind.AudioInput);
     });
-  },
+  }
 }
 </script>
