@@ -1,4 +1,5 @@
 import { DeviceSelectionOptions } from "@/lib/DeviceSelectionOptions";
+import { Track } from './tracks/index';
 
 
 /**
@@ -19,5 +20,16 @@ export function getDevicesOfKind(deviceInfos: Array<MediaDeviceInfo>, kind: stri
 export function getDevices() {
     return navigator.mediaDevices.enumerateDevices().then((deviceInfos) => {
         return new DeviceSelectionOptions(deviceInfos);
+    });
+}
+
+/**
+ * Attempts to get access to the users media devices, and returns a promise.
+ */
+export function getLocalTracks(constraints: MediaStreamConstraints) {
+    return navigator.mediaDevices.getUserMedia(constraints).then((mediaStream) => {
+        return mediaStream.getTracks().map(track => {
+            return Track.GenerateTrack(track);
+        });
     });
 }
