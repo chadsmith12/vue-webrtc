@@ -1,5 +1,5 @@
 import { DeviceSelectionOptions } from "@/lib/DeviceSelectionOptions";
-import { Track } from './tracks/index';
+import { LocalMediaTrack } from './tracks/index';
 
 
 /**
@@ -25,11 +25,13 @@ export function getDevices() {
 
 /**
  * Attempts to get access to the users media devices, and returns a promise.
+ * @param constraints The stream constraints when getting the devices.
+ * @returns {Promise<LocalMediaTrack[]>} Promise that resolves to an array of LocalMediaTrack's.
  */
 export function getLocalTracks(constraints: MediaStreamConstraints) {
     return navigator.mediaDevices.getUserMedia(constraints).then((mediaStream) => {
         return mediaStream.getTracks().map(track => {
-            return Track.GenerateTrack(track);
+            return new LocalMediaTrack(track);
         });
     });
 }

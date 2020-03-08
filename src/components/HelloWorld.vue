@@ -19,8 +19,13 @@
               </v-list-item>
           </v-list>
         </v-card>
-        <v-btn @click="accessCamera">Start Recording</v-btn>
+        <v-btn @click="accessCamera">{{ recordingButtonText }}</v-btn>
       </v-col>
+    </v-row>
+    <v-row>
+      <v-card v-show="showVideo" class="mx-auto" max-width="600">
+        <video id="localVideo" autoplay></video>
+      </v-card>
     </v-row>
   </v-container>
 </template>
@@ -32,11 +37,15 @@ import {
   DeviceSelectionOptions,
   DeviceKind
 } from "../lib/DeviceSelectionOptions";
+import { LocalMediaTrack } from "@/lib/tracks/index";
 import { Nullable, getValue, hasValue } from "@/lib/Nullable";
 
 @Component
 export default class HelloWorld extends Vue {
   devices: Nullable<DeviceSelectionOptions> = null;
+  showVideo = false;
+  localVideo: Nullable<HTMLVideoElement> = null;
+  localTracks: LocalMediaTrack[] = [];
 
   get audioOutputDevices() {
     if (!hasValue(this.devices)) {
@@ -54,16 +63,44 @@ export default class HelloWorld extends Vue {
     return getValue(this.devices).getDeviceOptions(DeviceKind.VideoInput);
   }
 
-  async accessCamera() {
+  get recordingButtonText()  {
+    return this.showVideo ? 'Stop Recording' : 'Start Recording';
+  }
+
+  async getTracks() {
     const tracks = await getLocalTracks({
       audio: false,
       video: true
     });
 
-    console.log(tracks);
+    this.localTracks = tracks;
+    this.showVideo = true;
+    this.localVideo = document.querySelector('#localVideo');
+
+    for(const item of tracks) {
+      const stream = item.generateMediaStream();
+      getValue(this.localVideo).srcObject = stream;
+    }
   }
 
-  async created() {
+  stopTracks() {
+    for(const track of this.localTracks) {
+      track.stop();
+    }
+
+    this.showVideo = false;
+  }
+
+  async accessCamera() {
+    if(!this.showVideo) {
+      await this.getTracks();
+    }
+    else {
+      this.stopTracks();
+    }
+  }
+
+  async mounted() {
     this.devices = await getDevices();
   }
 }
