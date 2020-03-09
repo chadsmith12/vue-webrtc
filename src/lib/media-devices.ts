@@ -24,6 +24,14 @@ export function getDevices() {
 }
 
 /**
+ * Attempts to get  access  to the users media devices
+ * @returns  {Promise<MediaStream>} promise  that resolves to the media stream.
+ */
+export function getLocalMediaStream(constraints: MediaStreamConstraints) {
+    return navigator.mediaDevices.getUserMedia(constraints);
+}
+
+/**
  * Attempts to get access to the users media devices, and returns a promise.
  * @param constraints The stream constraints when getting the devices.
  * @returns {Promise<LocalMediaTrack[]>} Promise that resolves to an array of LocalMediaTrack's.

@@ -17,6 +17,7 @@
     "vuetify": "^2.2.11"
   },
   "devDependencies": {
+    "@types/dom-mediacapture-record": "^1.0.3",
     "@types/jest": "^24.0.19",
     "@typescript-eslint/eslint-plugin": "^2.18.0",
     "@typescript-eslint/parser": "^2.18.0",
@@ -30,7 +31,9 @@
     "@vue/test-utils": "1.0.0-beta.31",
     "eslint": "^6.7.2",
     "eslint-plugin-vue": "^6.1.2",
+    "install": "^0.13.0",
     "lint-staged": "^9.5.0",
+    "npm": "^6.14.2",
     "sass": "^1.19.0",
     "sass-loader": "^8.0.0",
     "typescript": "~3.7.5",
