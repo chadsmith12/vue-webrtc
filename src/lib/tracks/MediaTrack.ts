@@ -50,6 +50,13 @@ type MediaTrackKind = 'video' | 'audio';
      }
 
      /**
+      * Returns the set of constraints recently established for the track.
+      */
+     trackConstraints() {
+         return this.mediaStreamTrack.getConstraints();
+     }
+
+     /**
       * generates a new media stream from this track.
       * If there is already a media stream generated, then removes previous tracks and adds new tracks.
       */
@@ -61,6 +68,7 @@ type MediaTrackKind = 'video' | 'audio';
          }
          
          // get the tracks for this type of media stream
+         // eslint-disable-next-line
          this._getTracks(mediaStream!).forEach(track => {
              mediaStream?.removeTrack(track);
          });

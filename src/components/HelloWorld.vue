@@ -25,6 +25,7 @@
     <v-row>
       <v-card v-show="showVideo" class="mx-auto" max-width="600">
         <video id="localVideo" autoplay></video>
+        <audio autoplay id="localAudio"></audio>
       </v-card>
     </v-row>
   </v-container>
@@ -45,7 +46,24 @@ export default class HelloWorld extends Vue {
   devices: Nullable<DeviceSelectionOptions> = null;
   showVideo = false;
   localVideo: Nullable<HTMLVideoElement> = null;
+  localAudio: Nullable<HTMLAudioElement> = null;
   localTracks: LocalMediaTrack[] = [];
+
+  get vgaConstraints() {
+    const vga: MediaStreamConstraints = {
+      audio: true,
+      video:  {
+        width: {
+          exact: 640
+        },
+        height: {
+          exact: 480
+        }
+      }
+    };
+
+    return vga;
+  }
 
   get audioOutputDevices() {
     if (!hasValue(this.devices)) {
@@ -68,18 +86,19 @@ export default class HelloWorld extends Vue {
   }
 
   async getTracks() {
-    const tracks = await getLocalTracks({
-      audio: false,
-      video: true
-    });
+    const tracks = await getLocalTracks(this.vgaConstraints);
 
     this.localTracks = tracks;
     this.showVideo = true;
     this.localVideo = document.querySelector('#localVideo');
+    this.localAudio = document.querySelector('#localAudio');
 
     for(const item of tracks) {
       const stream = item.generateMediaStream();
-      getValue(this.localVideo).srcObject = stream;
+      if(item.kind === 'video')
+        getValue(this.localVideo).srcObject = stream;
+      else
+        getValue(this.localAudio).srcObject = stream;
     }
   }
 
