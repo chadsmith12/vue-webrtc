@@ -9,12 +9,9 @@
       </v-col>
     </v-row>
     <v-row class="text-center">
-      <v-card v-show="showVideo" class="mx-auto">
-        <video id="localVideo" autoplay></video>
-      </v-card>
-    </v-row>
-    <v-row class="text-center">
-      <video id="recordedVideo" controls></video>
+      <v-col cols="12">
+        <video id="recordedVideo" controls></video>
+      </v-col>
     </v-row>
   </v-container>
 </template>
