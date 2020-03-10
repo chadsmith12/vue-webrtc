@@ -1,8 +1,24 @@
 <template>
   <v-container>
     <v-row class="text-center">
-      <v-col cols="12">
-        <v-img :src="require('../assets/logo.svg')" class="my-3" contain height="200" />
+      <v-col cols="6">
+        <v-select
+          label="Video Device"
+          :items="videoDevices"
+          item-value="deviceId"
+          item-text="label"
+          v-model="currentVideoDevice">
+        </v-select>
+      </v-col>
+      <v-col cols="6">
+        <v-select
+          label="Audio Output Device"
+          :items="audioOutputDevices"
+          item-value="deviceId"
+          item-text="label"
+          v-model="currentAudioOutputDevice"
+          @change="updateSinkId">
+        </v-select>
       </v-col>
       <v-col class="mb-5" cols="12">
         <v-btn @click="accessCamera">{{ recordingButtonText }}</v-btn>
@@ -10,7 +26,7 @@
     </v-row>
     <v-row class="text-center">
       <v-col cols="12">
-        <video id="recordedVideo" controls></video>
+        <video id="localVideo" controls></video>
       </v-col>
     </v-row>
   </v-container>
@@ -18,65 +34,84 @@
 
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
-import { getDevices, getLocalMediaStream } from "@/lib/media-devices";
+import { getDevices, getLocalTracks } from "@/lib/media-devices";
 import {
   DeviceSelectionOptions
 } from "../lib/DeviceSelectionOptions";
 import { LocalMediaTrack } from "@/lib/tracks/index";
-import { Nullable, getValue } from "@/lib/Nullable";
+import { Nullable, getValue, hasValue } from "@/lib/Nullable";
 
 @Component
 export default class HelloWorld extends Vue {
   devices: Nullable<DeviceSelectionOptions> = null;
+  currentVideoDevice = "";
+  currentAudioOutputDevice = "";
   showVideo = false;
   localVideo: Nullable<HTMLVideoElement> = null;
   recordedBlobs: Blob[] = [];
   localTracks: LocalMediaTrack[] = [];
-  mediaRecorder: Nullable<MediaRecorder> = null;
 
   get recordingButtonText()  {
     return this.showVideo ? 'Stop Recording' : 'Start Recording';
   }
 
+  get videoDevices() {
+    if(!hasValue(this.devices)) {
+      return [];
+    }
+
+    return getValue(this.devices).deviceGroups.videoinput;
+  }
+
+  get audioOutputDevices() {
+    if(!hasValue(this.devices)) {
+      return [];
+    }
+
+    return getValue(this.devices).deviceGroups.audiooutput;
+  }
+
+  updateSinkId() {
+    // we have to use any here as typescript doesn't know about setSinkId yet
+    // eslint-disable-next-line
+    const videoElement = getValue(this.localVideo) as any;
+    if(typeof videoElement.sinkId !== 'undefined') {
+      videoElement.setSinkId(this.currentAudioOutputDevice)
+        .then(() => console.log("Changed SinkId"))
+        .catch(() => {
+          // reset to the first index something happened
+          this.currentAudioOutputDevice = 'default';
+        });
+    }
+  }
+
   async getTracks() {
     const constraints: MediaStreamConstraints = {
       audio: {
-        echoCancellation: true
+        echoCancellation: true,
+        deviceId: this.currentAudioOutputDevice
       },
       video: {
-        width: 1280,
-        height: 720
+        deviceId: this.currentVideoDevice
       }
     };
-    const stream = await getLocalMediaStream(constraints);
+    console.log(JSON.stringify(constraints));
+    const tracks = await getLocalTracks(constraints);
+    const mediaStream = new MediaStream(tracks.map(track => track.mediaStreamTrack));
 
     this.showVideo = true;
-    this.localVideo = document.querySelector('#localVideo');
-    getValue(this.localVideo).srcObject = stream;
-
-// eslint-disable-next-line
-    this.startRecording(stream!);
-  }
-
-  startRecording(stream: MediaStream) {
-    this.mediaRecorder = new MediaRecorder(stream);
-    this.mediaRecorder.ondataavailable = (e) => {
-      this.recordedBlobs.push(e.data);
-    }
-    this.mediaRecorder.start(10);
-  }
-
-  stopRecording() {
-    this.mediaRecorder?.stop();
-    const supperBuffer = new Blob(this.recordedBlobs,  {type: 'video/webm'});
-    const recordingContainer: Nullable<HTMLVideoElement> = document.querySelector('#recordedVideo');
-    getValue(recordingContainer).src = window.URL.createObjectURL(supperBuffer);
-    getValue(recordingContainer).play();
+    this.localTracks = tracks;
+    getValue(this.localVideo).srcObject = mediaStream;
   }
 
   stopTracks() {
     this.showVideo = false;
-    this.stopRecording();
+    getValue(this.localVideo).srcObject = null;
+    for(const track of this.localTracks) {
+      track.stop();
+    }
+
+    this.localTracks = [];
   }
 
   async accessCamera() {
@@ -90,6 +125,10 @@ export default class HelloWorld extends Vue {
 
   async mounted() {
     this.devices = await getDevices();
+    this.localVideo = document.querySelector('#localVideo');
+
+    this.currentVideoDevice = this.devices.deviceGroups.videoinput[0].deviceId;
+    this.currentAudioOutputDevice = this.devices.deviceGroups.audiooutput[0].deviceId;
   }
 }
 </script>
