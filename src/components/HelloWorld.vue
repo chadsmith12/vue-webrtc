@@ -77,7 +77,6 @@ export default class HelloWorld extends Vue {
     const videoElement = getValue(this.localVideo) as any;
     if(typeof videoElement.sinkId !== 'undefined') {
       videoElement.setSinkId(this.currentAudioOutputDevice)
-        .then(() => console.log("Changed SinkId"))
         .catch(() => {
           // reset to the first index something happened
           this.currentAudioOutputDevice = 'default';
@@ -95,7 +94,6 @@ export default class HelloWorld extends Vue {
         deviceId: this.currentVideoDevice
       }
     };
-    console.log(JSON.stringify(constraints));
     const tracks = await getLocalTracks(constraints);
     const mediaStream = new MediaStream(tracks.map(track => track.mediaStreamTrack));
 
