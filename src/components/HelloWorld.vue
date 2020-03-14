@@ -1,15 +1,14 @@
 <template>
   <v-container>
+    <app-alert v-if="isError">There was an error. Please try again.</app-alert>
     <v-row class="text-center">
       <v-col cols="12">
-        <v-btn @click="onClickStream">
-          {{ recordingButtonText }}
-        </v-btn>
+        <v-btn @click="onClickStream">{{ recordingButtonText }}</v-btn>
       </v-col>
       <v-col cols="6">
         <video id="localVideo" autoplay controls muted loop playsinline>
-          <source :src="require('../assets/videos/chrome.mp4')"/>
-          <source :src="require('../assets/videos/chrome.webm')"/>
+          <source :src="require('../assets/videos/chrome.mp4')" />
+          <source :src="require('../assets/videos/chrome.webm')" />
         </video>
       </v-col>
       <v-col cols="6">
@@ -21,24 +20,24 @@
 
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
-import { Nullable, getValue } from '@/lib/Nullable';
+import { Nullable, getValue } from "@/lib/Nullable";
 
 @Component
 export default class HelloWorld extends Vue {
   isStreaming = false;
+  isError = false;
   localVideo: Nullable<HTMLVideoElement> = null;
   videoStream: Nullable<HTMLVideoElement> = null;
   stream: Nullable<MediaStream> = null;
 
-  get recordingButtonText()  {
-    return !this.isStreaming ? 'Start Streaming' : 'Stop Streaming';
+  get recordingButtonText() {
+    return !this.isStreaming ? "Start Streaming" : "Stop Streaming";
   }
 
   onClickStream() {
-    if(!this.isStreaming) {
+    if (!this.isStreaming) {
       this.startStream();
-    }
-    else {
+    } else {
       this.stopStream();
     }
   }
@@ -46,10 +45,9 @@ export default class HelloWorld extends Vue {
   startStream() {
     // eslint-disable-next-line
     const local = getValue(this.localVideo) as any;
-    if(local.captureStream) {
+    if (local.captureStream) {
       this.stream = local.captureStream();
-    }
-    else if(local.mozCaptureStream) {
+    } else if (local.mozCaptureStream) {
       this.stream = local.mozCaptureStream();
     }
 
@@ -64,8 +62,8 @@ export default class HelloWorld extends Vue {
   }
 
   mounted() {
-    this.localVideo = document.querySelector('#localVideo');
-    this.videoStream = document.querySelector('#videoStream');
+    this.localVideo = document.querySelector("#localVideo");
+    this.videoStream = document.querySelector("#videoStream");
   }
 }
 </script>
